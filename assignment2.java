@@ -32,13 +32,15 @@ public class assignment2 {
             ResultSetMetaData rsMetaData=rs.getMetaData();
 
             while(rs.next()){
-
-                String name = rs.getString("city");
+                String zipcode=rs.getString("zipcode");
+                String city = rs.getString("city");
                 String state=rs.getString("state");
                 double lat=rs.getDouble("lat");
                 double lon=rs.getDouble("long");
-                Place place =new Place(name,state,lat,lon);
-                System.out.println(place);
+                int population=rs.getInt("estimatedpopulation");
+                Place original =new Place(zipcode,city,state,lat,lon,population);
+
+                System.out.println("Original place:\n"+original);
             }
             conn.close();
         } catch (SQLException e) {
@@ -86,42 +88,43 @@ public class assignment2 {
     }
 }
 class Place {
-    String name;
+    String zipcode;
+    String city;
     String state;
     double latitude;
     double longitude;
-    double distanceFromOrigin;
+    int population;
 
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
         if (!(o instanceof Place)) return false;
         Place place = (Place) o;
-        return Objects.equals(getName(), place.getName()) &&
+        return Objects.equals(getCity(), place.getCity()) &&
                 Objects.equals(getState(), place.getState());
     }
 
     @Override
     public int hashCode() {
 
-        return Objects.hash(getName(), getState());
+        return Objects.hash(getCity(), getState());
     }
 
-    public Place(String name, String state,  double latitude, double longitude) {
-        this.name = name;
+    public Place(String zippcode,String city, String state,  double latitude, double longitude,int population) {
+        this.zipcode=zippcode;
+        this.city = city;
         this.state = state;
-
         this.latitude = latitude;
         this.longitude = longitude;
-        this.distanceFromOrigin=-1.0;
+        this.population=population;
     }
 
-    public String getName() {
-        return name;
+    public String getCity() {
+        return city;
     }
 
-    public void setName(String name) {
-        this.name = name;
+    public void setCity(String city) {
+        this.city = city;
     }
 
     public String getState() {
@@ -147,21 +150,20 @@ class Place {
     public void setLongitude(double longitude) {
         this.longitude = longitude;
     }
-
-    public double getDistanceFromOrigin() {
-        return distanceFromOrigin;
+    public double getPopulation() {
+        return population;
     }
 
-    public void setDistanceFromOrigin(double distanceFromOrigin) {
-        this.distanceFromOrigin = distanceFromOrigin;
+    public void setPopulation(int population) {
+        this.population = population;
     }
+
+
 
     @Override
     public String toString() {
-        return
-                 name + '\'' +
-                         state + '\'' +
-                         latitude + '\'' +
-                         longitude + '\'';
+        return String.format("Zipcode  | City          | State | Lat    | Lon     | Population |\n" +
+                        "%-10s %-15s %-7s %-3.2f    %-3.2f     %-8d",
+                        zipcode,city,state,latitude,longitude,population);
     }
 }
