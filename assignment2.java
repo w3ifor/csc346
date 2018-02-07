@@ -10,13 +10,15 @@ public class assignment2 {
 
     public static void main(String[]args){
         Scanner input=new Scanner(System.in);
-        String zipcode=askZipCode(input);
-        int distance=askDistance(input);
-        System.out.println(zipcode+"   "+distance);
+        String vaildzipcode=askZipCode(input);
+        double distance=askDistance(input)*1.60934;
+        input.close();
+        System.out.println(vaildzipcode+"   "+distance);
         String host="jdbc:mysql://turing.cs.missouriwestern.edu:3306/misc";
         String user="csc254";
         String password="age126";
-        String queryString ="SELECT city,region,country,latitude,longitude FROM cities where region LIKE 'MO' ";
+        String originquery=String.format("SELECT zipcode, city,state, lat, `long`,estimatedpopulation FROM zips2 " +
+                "WHERE (zipcode = %s) and locationtype = \"PRIMARY\"",vaildzipcode);
 
         try {
             conn= DriverManager.getConnection(host,user,password);
@@ -25,23 +27,17 @@ public class assignment2 {
             }else
                 System.out.println("Connection successful");
             stmt=conn.createStatement();
-            rs= stmt.executeQuery(queryString);
+            rs= stmt.executeQuery(originquery);
 
             ResultSetMetaData rsMetaData=rs.getMetaData();
-            int numberOfColums =rsMetaData.getColumnCount();
-
-            System.out.println("Number of column: "+numberOfColums);
-            for(int i=1; i<=numberOfColums;i++){
-                System.out.printf("Column %2d: %s (%s)\n",i,rsMetaData.getColumnName(i),rsMetaData.getColumnTypeName(i));
-            }
 
             while(rs.next()){
-                String country= rs.getString("country");
+
                 String name = rs.getString("city");
-                String region=rs.getString("region");
-                double lat=rs.getDouble("latitude");
-                double lon=rs.getDouble("longitude");
-                Place place =new Place(name,region,country,lat,lon);
+                String state=rs.getString("state");
+                double lat=rs.getDouble("lat");
+                double lon=rs.getDouble("long");
+                Place place =new Place(name,state,lat,lon);
                 System.out.println(place);
             }
             conn.close();
@@ -53,11 +49,11 @@ public class assignment2 {
 
     }
 
-    public static int askDistance(Scanner input) {
+    public static double askDistance(Scanner input) {
         boolean stop=false;
-        int vailddistance=0;
+        double vailddistance=0;
         while(!stop){
-            System.out.println("Enter Distacnce: ");
+            System.out.println("Enter Distacnce: (miles)");
             int distance=input.nextInt();
             if(distance<0){
                 System.out.println("Invalid distance, please enter again! ");
@@ -91,8 +87,7 @@ public class assignment2 {
 }
 class Place {
     String name;
-    String region;
-    String country;
+    String state;
     double latitude;
     double longitude;
     double distanceFromOrigin;
@@ -103,19 +98,19 @@ class Place {
         if (!(o instanceof Place)) return false;
         Place place = (Place) o;
         return Objects.equals(getName(), place.getName()) &&
-                Objects.equals(getRegion(), place.getRegion());
+                Objects.equals(getState(), place.getState());
     }
 
     @Override
     public int hashCode() {
 
-        return Objects.hash(getName(), getRegion());
+        return Objects.hash(getName(), getState());
     }
 
-    public Place(String name, String region, String country, double latitude, double longitude) {
+    public Place(String name, String state,  double latitude, double longitude) {
         this.name = name;
-        this.region = region;
-        this.country = country;
+        this.state = state;
+
         this.latitude = latitude;
         this.longitude = longitude;
         this.distanceFromOrigin=-1.0;
@@ -129,20 +124,12 @@ class Place {
         this.name = name;
     }
 
-    public String getRegion() {
-        return region;
+    public String getState() {
+        return state;
     }
 
-    public void setRegion(String region) {
-        this.region = region;
-    }
-
-    public String getCountry() {
-        return country;
-    }
-
-    public void setCountry(String country) {
-        this.country = country;
+    public void setState(String state) {
+        this.state = state;
     }
 
     public double getLatitude() {
@@ -171,13 +158,10 @@ class Place {
 
     @Override
     public String toString() {
-        return "Place{" +
-                "name='" + name + '\'' +
-                ", region='" + region + '\'' +
-                ", country='" + country + '\'' +
-                ", latitude=" + latitude +
-                ", longitude=" + longitude +
-                ", distanceFromOrigin=" + distanceFromOrigin +
-                '}';
+        return
+                 name + '\'' +
+                         state + '\'' +
+                         latitude + '\'' +
+                         longitude + '\'';
     }
 }
