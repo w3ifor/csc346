@@ -51,7 +51,7 @@ public class assignment2 {
             else
             {
                 String disasterquery=String.format("SELECT zipcode, city,state, lat, `long`,estimatedpopulation FROM zips2 " +
-                        "WHERE (zipcode = %s) and locationtype = \"PRIMARY\"",vaildzipcode);
+                        "WHERE locationtype = \"PRIMARY\"");
                 rs = stmt.executeQuery(disasterquery);
                 while(rs.next()){
                     String zipcode=rs.getString("zipcode");
@@ -61,28 +61,27 @@ public class assignment2 {
                     double lon=rs.getDouble("long");
                     int population=rs.getInt("estimatedpopulation");
                     double distance=haversine(original.getLatitude(),original.getLongitude(),lat,lon);
-                    if(distance<distanceInMeters || zipcode !=original.getZipcode()){
+
+                    if(distance<distanceInMeters && zipcode !=original.getZipcode()){
                         disasterplaces.add(new Place(zipcode,city,state,lat,lon,population));
                     }
 
                 }
+
                 for(int i=0;i<disasterplaces.size();i++){
                     for(int j=1;j<disasterplaces.size();j++){
-                        if(disasterplaces.get(i).getCity().equals(disasterplaces.get(j).getCity())||disasterplaces.get(i).getState().equals(disasterplaces.get(j).getState())){
+                        if(disasterplaces.get(i).getCity().equals(disasterplaces.get(j).getCity())&&disasterplaces.get(i).getState().equals(disasterplaces.get(j).getState())){
                             disasterplaces.get(i).setPopulation(disasterplaces.get(i).getPopulation()+disasterplaces.get(j).getPopulation());
                             disasterplaces.remove(disasterplaces.get(j));
-                            j--;
                         }
                     }
 
                 }
+                System.out.println("Avoid cities:\nZipcode  | City          | State | Lat    | Lon     | Population |");
 
-                System.out.println("Avoid cities:\nZipcode  | City          | State | Lat    | Lon     | Population |\n");
-                for(int i=0;i<=disasterplaces.size();i++){
-                    System.out.println(disasterplaces);
+                for(Place places : disasterplaces){
+                    System.out.println(places);
                 }
-
-
             }
             conn.close();
         } catch (SQLException e) {
@@ -129,7 +128,7 @@ public class assignment2 {
         return vaildzipcode;
     }
     public static double haversine(double lat1, double lon1, double lat2, double lon2) {
-        final double R = 6371e3;
+        final double R = 6371;
         lat1 = Math.toRadians(lat1);
         lat2 = Math.toRadians(lat2);
         double Lat = Math.toRadians(lat2 - lat1);
