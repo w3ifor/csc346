@@ -12,9 +12,9 @@ public class assignment2 {
     public static void main(String[]args){
         Scanner input=new Scanner(System.in);
         String vaildzipcode=askZipCode(input);
-        double distanceInMeters=askDistance(input)*1.60934;
+        double distanceInMeters=askDistance(input);
         input.close();
-        System.out.println(vaildzipcode+"   "+distanceInMeters);
+
         String host="jdbc:mysql://turing.cs.missouriwestern.edu:3306/misc";
         String user="csc254";
         String password="age126";
@@ -73,7 +73,9 @@ public class assignment2 {
                         if(disasterplaces.get(i).getCity().equals(disasterplaces.get(j).getCity())&&disasterplaces.get(i).getState().equals(disasterplaces.get(j).getState())){
                             disasterplaces.get(i).setPopulation(disasterplaces.get(i).getPopulation()+disasterplaces.get(j).getPopulation());
                             disasterplaces.remove(disasterplaces.get(j));
+
                         }
+
                     }
 
                 }
@@ -129,13 +131,15 @@ public class assignment2 {
     }
     public static double haversine(double lat1, double lon1, double lat2, double lon2) {
         final double R = 6371;
-        lat1 = Math.toRadians(lat1);
-        lat2 = Math.toRadians(lat2);
+
         double Lat = Math.toRadians(lat2 - lat1);
         double Lon = Math.toRadians(lon2 - lon1);
+        lat1 = Math.toRadians(lat1);
+        lat2 = Math.toRadians(lat2);
         double a = Math.pow(Math.sin(Lat / 2.0),2.0) + Math.cos(lat1) * Math.cos(lat2)* Math.pow(Math.sin(Lon/2.0),2.0);
-        double c = 2.0 * Math.atan2(Math.sqrt(a),Math.sqrt(1-a));
+        double c = 2.0 * (Math.atan2(Math.sqrt(a),Math.sqrt(1.0-a)));
         return R * c;
+
     }
 }
 class Place {
