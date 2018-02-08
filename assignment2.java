@@ -27,21 +27,22 @@ public class assignment2 {
             }else
                 System.out.println("Connection successful");
             stmt=conn.createStatement();
-            String originquery=String.format("SELECT zipcode, city,state, lat, `long`,estimatedpopulation FROM zips2 " +
-                    "WHERE (zipcode = %s) and locationtype = \"PRIMARY\"",vaildzipcode);
+            String originquery=String.format("SELECT zip_code, city,state_prefix, lat, lon,population,housingunits FROM zips " +
+                    "WHERE (zip_code = %s) ",vaildzipcode);
             rs= stmt.executeQuery(originquery);
 
             ResultSetMetaData rsMetaData=rs.getMetaData();
             Place original=null;
             ArrayList<Place> disasterplaces=new ArrayList<>();
             while(rs.next()){
-                String zipcode=rs.getString("zipcode");
+                String zipcode=rs.getString("zip_code");
                 String city = rs.getString("city");
-                String state=rs.getString("state");
+                String state=rs.getString("state_prefix");
                 double lat=rs.getDouble("lat");
-                double lon=rs.getDouble("long");
-                int population=rs.getInt("estimatedpopulation");
-                original =new Place(zipcode,city,state,lat,lon,population);
+                double lon=rs.getDouble("lon");
+                int population=rs.getInt("population");
+                int housingunits=rs.getInt("housingunits");
+                original =new Place(zipcode,city,state,lat,lon,population,housingunits);
 
                 System.out.println("Original place:\n"+original);
             }
@@ -50,36 +51,36 @@ public class assignment2 {
             }
             else
             {
-                String disasterquery=String.format("SELECT zipcode, city,state, lat, `long`,estimatedpopulation FROM zips2 " +
-                        "WHERE locationtype = \"PRIMARY\"");
+                String disasterquery=String.format("SELECT zip_code, city,state_prefix, lat,lon,population,housingunits FROM zips");
                 rs = stmt.executeQuery(disasterquery);
                 while(rs.next()){
-                    String zipcode=rs.getString("zipcode");
+                    String zipcode=rs.getString("zip_code");
                     String city = rs.getString("city");
-                    String state=rs.getString("state");
+                    String state=rs.getString("state_prefix");
                     double lat=rs.getDouble("lat");
-                    double lon=rs.getDouble("long");
-                    int population=rs.getInt("estimatedpopulation");
+                    double lon=rs.getDouble("lon");
+                    int population=rs.getInt("population");
+                    int housingunits=rs.getInt("housingunits");
                     double distance=haversine(original.getLatitude(),original.getLongitude(),lat,lon);
 
                     if(distance<distanceInMeters && zipcode !=original.getZipcode()){
-                        disasterplaces.add(new Place(zipcode,city,state,lat,lon,population));
+                        disasterplaces.add(new Place(zipcode,city,state,lat,lon,population,housingunits));
                     }
 
                 }
 
                 for(int i=0;i<disasterplaces.size();i++){
-                    for(int j=1;j<disasterplaces.size();j++){
+                    for(int j=i+1;j<disasterplaces.size();j++){
                         if(disasterplaces.get(i).getCity().equals(disasterplaces.get(j).getCity())&&disasterplaces.get(i).getState().equals(disasterplaces.get(j).getState())){
                             disasterplaces.get(i).setPopulation(disasterplaces.get(i).getPopulation()+disasterplaces.get(j).getPopulation());
                             disasterplaces.remove(disasterplaces.get(j));
-
+                            j--;
                         }
 
                     }
 
                 }
-                System.out.println("Avoid cities:\nZipcode  | City          | State | Lat    | Lon     | Population |");
+                System.out.println("Avoid cities:\nZipcode  | City          | State | Lat    | Lon     | Population | Housingunits |");
 
                 for(Place places : disasterplaces){
                     System.out.println(places);
@@ -149,6 +150,7 @@ class Place {
     double latitude;
     double longitude;
     int population;
+    int housingunits;
 
     @Override
     public boolean equals(Object o) {
@@ -165,13 +167,14 @@ class Place {
         return Objects.hash(getCity(), getState());
     }
 
-    public Place(String zipcode,String city, String state,  double latitude, double longitude,int population) {
+    public Place(String zipcode,String city, String state,  double latitude, double longitude,int population, int housingunits) {
         this.zipcode=zipcode;
         this.city = city;
         this.state = state;
         this.latitude = latitude;
         this.longitude = longitude;
         this.population=population;
+        this.housingunits=housingunits;
     }
 
     public String getZipcode() {
@@ -220,13 +223,20 @@ class Place {
     public void setPopulation(int population) {
         this.population = population;
     }
+    public int getHousingunits() {
+        return housingunits;
+    }
+
+    public void setHousingunits(int housingunits) {
+        this.housingunits = housingunits;
+    }
 
 
 
     @Override
     public String toString() {
         return String.format(
-                        "%-10s %-15s %-7s %-3.2f    %-3.2f     %-8d",
-                        zipcode,city,state,latitude,longitude,population);
+                        "%-10s %-15s %-7s %-3.2f    %-3.2f     %-8d    %-8d",
+                        zipcode,city,state,latitude,longitude,population,housingunits);
     }
 }
